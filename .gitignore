@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Node
+node_modules/
+.next/
+
+# Logs
+*.log
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Generated Files
+storage/uploads/*
+storage/outputs/*
+storage/screenshots/*
+storage/jobs/*
+
+# Keep folders
+!storage/uploads/.gitkeep
+!storage/outputs/.gitkeep
+!storage/screenshots/.gitkeep
+!storage/jobs/.gitkeep
