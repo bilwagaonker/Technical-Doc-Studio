@@ -31,4 +31,4 @@ using Computer Vision, OCR, Speech-to-Text, and Large Language Models.
 - GPT-5.5 / Azure OpenAI
 
 ## Status
-Project Setup Completed ![alt text](image.png)
+Project Setup Completed
