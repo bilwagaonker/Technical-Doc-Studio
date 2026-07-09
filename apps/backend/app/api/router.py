@@ -1,25 +1,57 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, File, UploadFile, HTTPException
 
-from app.api.routes import health
-from app.api.routes import upload
-from app.api.routes import jobs
+from app.services.upload_service import UploadService
+from app.services.video_service import VideoService
+import traceback
 
-api_router = APIRouter()
+router = APIRouter()
 
-api_router.include_router(
-    health.router,
-    prefix="/health",
-    tags=["Health"]
-)
+upload_service = UploadService()
+video_service = VideoService()
 
-api_router.include_router(
-    upload.router,
-    prefix="/upload",
-    tags=["Upload"]
-)
 
-api_router.include_router(
-    jobs.router,
-    prefix="/jobs",
-    tags=["Jobs"]
-)
+@router.get("/")
+async def health():
+
+    return {
+        "status": "running",
+        "service": "AI Technical Documentation Studio"
+    }
+
+
+@router.post("/upload")
+async def upload_video(
+
+    file: UploadFile = File(...)
+
+):
+
+    try:
+
+        video_path = upload_service.save(file)
+
+        result = video_service.process_video(
+            video_path
+        )
+
+        return {
+
+            "success": True,
+
+            "message": "Documentation generated successfully.",
+
+            "result": result
+
+        }
+
+    except Exception as ex:
+        
+        traceback.print_exc()
+        
+        raise HTTPException(
+
+            status_code=500,
+
+            detail=str(ex)
+
+        )

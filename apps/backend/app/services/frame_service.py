@@ -9,11 +9,15 @@ class FrameService:
     def extract_frames(
         video_path: str,
         output_folder: str,
-        threshold: float = 0.92,
-        min_gap_seconds: float = 1.0
+        scene_threshold: float = 0.92,
+        minimum_gap: float = 1.5
     ):
 
-        Path(output_folder).mkdir(parents=True, exist_ok=True)
+        output_folder = Path(output_folder)
+        output_folder.mkdir(
+            parents=True,
+            exist_ok=True
+        )
 
         capture = cv2.VideoCapture(video_path)
 
@@ -25,7 +29,7 @@ class FrameService:
 
         frame_number = 0
 
-        frames = []
+        extracted_frames = []
 
         while True:
 
@@ -34,53 +38,81 @@ class FrameService:
             if not success:
                 break
 
-            current_time = frame_number / fps
+            timestamp = frame_number / fps
 
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            gray = cv2.cvtColor(
+                frame,
+                cv2.COLOR_BGR2GRAY
+            )
 
-            gray = cv2.GaussianBlur(gray, (5, 5), 0)
+            gray = cv2.GaussianBlur(
+                gray,
+                (5, 5),
+                0
+            )
 
-            save_frame = False
+            save = False
 
             if previous_gray is None:
-                save_frame = True
+
+                save = True
 
             else:
 
-                similarity = cv2.matchTemplate(
-                    gray,
+                difference = cv2.absdiff(
                     previous_gray,
-                    cv2.TM_CCOEFF_NORMED
-                )[0][0]
+                    gray
+                )
+
+                score = np.mean(difference)
 
                 if (
-                    similarity < threshold
-                    and current_time - last_saved_time >= min_gap_seconds
+                    score > scene_threshold
+                    and
+                    timestamp - last_saved_time >= minimum_gap
                 ):
-                    save_frame = True
+                    save = True
 
-            if save_frame:
+            if save:
 
-                filename = f"frame_{len(frames):05}.png"
+                image_name = (
+                    f"frame_{len(extracted_frames):05}.png"
+                )
 
-                filepath = Path(output_folder) / filename
+                image_path = output_folder / image_name
 
-                cv2.imwrite(str(filepath), frame)
+                cv2.imwrite(
+                    str(image_path),
+                    frame
+                )
 
-                frames.append(
+                extracted_frames.append(
+
                     {
+
+                        "frame": len(extracted_frames) + 1,
+
                         "frameNumber": frame_number,
-                        "timestamp": round(current_time, 2),
-                        "image": filename
+
+                        "timestamp": round(
+                            timestamp,
+                            2
+                        ),
+
+                        "image": image_name,
+
+                        "path": str(image_path)
+
                     }
+
                 )
 
                 previous_gray = gray
 
-                last_saved_time = current_time
+                last_saved_time = timestamp
 
             frame_number += 1
 
         capture.release()
 
-        return frames
+        return extracted_frames
