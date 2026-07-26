@@ -227,12 +227,7 @@ Export Documents
 
 # 📸 Generated Outputs
 
-The application automatically produces:
-
-- Technical Documentation
-- Quick Reference Guides
-- Business Process Procedures
-- Training Material
+The application automatically produces the technical documentation pertaining to the uploaded SAP system video.
 
 Supported formats:
 
@@ -240,6 +235,14 @@ Supported formats:
 - HTML
 - Markdown
 - PDF (Upcoming)
+
+## What does the frontend look like?
+
+<img width="1152" height="648" alt="Frontend -edited" src="https://github.com/user-attachments/assets/c939c1ff-d418-4555-8e69-b122e93ed01e" />
+
+## What does the backend look like?
+
+https://github.com/user-attachments/assets/670bfe2c-1cbd-4308-b6a4-5ebc03870157
 
 ---
 
@@ -265,48 +268,22 @@ Supported formats:
 
 # 🚧 Roadmap
 
-- Better screenshot selection
+- Intelligent screenshot selection (differentiate with systems and gain context)
 - SAP field highlighting
 - Navigation arrows
-- Process flow diagrams
-- Export to PowerPoint
+- Improve the wording ability alongside the running SAP screens.
+- Export to PDF
 - Interactive HTML documentation
-- Knowledge base integration
 - RAG-powered documentation
 - AI reviewer agent
 - Agentic workflow
 
 ---
 
-# 💻 Getting Started
-
-## Backend
-
-```bash
-cd backend
-
-pip install -r requirements.txt
-
-uvicorn app.main:app --reload
-```
-
----
-
-## Frontend
-
-```bash
-cd frontend
-
-npm install
-
-npm run dev
-```
-
----
 
 # 📌 Future Vision
 
-The long-term goal is to evolve AI Technical Documentation Studio into a complete AI Documentation Platform capable of:
+The long-term goal can be to evolve AI Technical Documentation Studio into a complete AI Documentation Platform capable of:
 
 - Understanding SAP workflows
 - Learning enterprise knowledge
