@@ -97,6 +97,8 @@ class VideoPipeline:
         frame_folder = Path(
             "app/storage/frames"
         )
+        
+        output_folder = Path("app/storage/output")
 
         frame_folder.mkdir(
             parents=True,
@@ -179,26 +181,32 @@ class VideoPipeline:
 
         print("Exporting DOCX...")
 
-        output_file = self.export.export_docx(
+        docx_file = self.export.export_docx(documentation, frame_folder, output_folder="app/storage/output")
+        
+        print("Exporting HTML...")
 
-            documentation,
+        html_file = self.export.export_html(documentation, output_folder)
+        
+        print("Exporting MD file...")
 
-            frame_folder
-
-        )
+        md_file = self.export.export_markdown(documentation, output_folder)
+        
+        #print("Exporting PDF...")
+        
+        #pdf_file = self.export.export_pdf(documentation, frame_folder)
+        
+        
 
         ###########################################################
 
         return {
+        "documentation": documentation,
+        "status":"completed",
 
-            "metadata": metadata,
-
-            "documentation": documentation,
-
-            "document": str(output_file),
-
-            "steps": len(steps),
-
-            "frames": len(extracted_frames)
-
+        "downloads": {
+            "docx": str(docx_file),
+            "html": str(html_file),
+            "markdown": str(md_file),
+            #"pdf": str(pdf_file)
         }
+    }

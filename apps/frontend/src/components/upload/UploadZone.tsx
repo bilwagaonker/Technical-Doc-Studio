@@ -1,81 +1,125 @@
 "use client";
 
-import {useCallback} from "react";
-import {useDropzone} from "react-dropzone";
-import {UploadCloud} from "lucide-react";
+import { useCallback, useState } from "react";
+import { useDropzone } from "react-dropzone";
+import { UploadCloud, Loader2 } from "lucide-react";
+import { uploadVideo } from "@/lib/api";
+import { PipelineStatus } from "../pipeline/PipelineCard";
 
-export default function UploadZone() {
+interface UploadZoneProps {
+  setPipelineStatus: (status: PipelineStatus) => void;
+}
 
-    const onDrop = useCallback((acceptedFiles: File[]) => {
+export default function UploadZone({
+  setPipelineStatus,
+}: UploadZoneProps) {
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState("");
 
-        console.log(acceptedFiles);
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      if (acceptedFiles.length === 0) return;
 
-    }, []);
+      const file = acceptedFiles[0];
 
-    const {getRootProps,getInputProps,isDragActive}=useDropzone({
+      try {
+        setUploading(true);
 
-        onDrop,
+        setPipelineStatus("uploaded");
+        setMessage("📤 Video uploaded successfully.");
 
-        multiple:false,
+        // Small delay so user can see the Uploaded state
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
-        accept:{
-            "video/mp4":[".mp4"],
-            "video/x-msvideo":[".avi"],
-            "video/quicktime":[".mov"],
-            "video/x-matroska":[".mkv"]
-        }
+        setPipelineStatus("processing");
+        setMessage("⚙️ AI is processing your SAP demo video...");
 
-    });
+        const result = await uploadVideo(file);
 
-    return(
+        console.log(result.downloads);
 
-        <div
-        {...getRootProps()}
-        className="rounded-xl border-2 border-dashed border-slate-300 bg-white p-12 cursor-pointer hover:border-blue-500 transition"
-        >
+        setPipelineStatus("completed");
+        setMessage("✅ Documentation is ready for download.");
 
-            <input {...getInputProps()} />
+      } catch (error: any) {
+        console.error(error);
 
-            <div className="flex flex-col items-center">
+        setPipelineStatus("uploaded");
 
-                <UploadCloud className="h-16 w-16 text-blue-600"/>
+        setMessage(
+          error?.message || "❌ Failed to generate documentation."
+        );
+      } finally {
+        setUploading(false);
+      }
+    },
+    [setPipelineStatus]
+  );
 
-                <h2 className="mt-4 text-2xl font-semibold">
-                    Upload SAP Demo Video
-                </h2>
+  const {
+    getRootProps,
+    getInputProps,
+    isDragActive,
+  } = useDropzone({
+    onDrop,
+    multiple: false,
+    disabled: uploading,
+    accept: {
+      "video/mp4": [".mp4"],
+      "video/x-msvideo": [".avi"],
+      "video/quicktime": [".mov"],
+      "video/x-matroska": [".mkv"],
+    },
+  });
 
-                <p className="mt-2 text-slate-500">
+  return (
+    <div
+      {...getRootProps()}
+      className={`rounded-xl border-2 border-dashed p-12 cursor-pointer transition
+      ${
+        isDragActive
+          ? "border-blue-600 bg-blue-50"
+          : "border-slate-300 bg-white hover:border-blue-500"
+      }`}
+    >
+      <input {...getInputProps()} />
 
-                    {isDragActive
-                    ? "Drop the video here..."
-                    : "Drag & Drop your demo video or click to browse"}
+      <div className="flex flex-col items-center">
+        {uploading ? (
+          <Loader2 className="h-16 w-16 animate-spin text-blue-600" />
+        ) : (
+          <UploadCloud className="h-16 w-16 text-blue-600" />
+        )}
 
-                </p>
+        <h2 className="mt-4 text-2xl font-semibold">
+          Upload SAP Demo Video
+        </h2>
 
-                <div className="mt-6 flex gap-2">
+        <p className="mt-2 text-center text-slate-500">
+          {uploading
+            ? "Processing your video..."
+            : isDragActive
+            ? "Drop the video here..."
+            : "Drag & Drop your SAP demo video or click to browse"}
+        </p>
 
-                    <span className="rounded bg-slate-100 px-3 py-1 text-sm">
-                        MP4
-                    </span>
-
-                    <span className="rounded bg-slate-100 px-3 py-1 text-sm">
-                        AVI
-                    </span>
-
-                    <span className="rounded bg-slate-100 px-3 py-1 text-sm">
-                        MOV
-                    </span>
-
-                    <span className="rounded bg-slate-100 px-3 py-1 text-sm">
-                        MKV
-                    </span>
-
-                </div>
-
-            </div>
-
+        <div className="mt-6 flex gap-2">
+          {["MP4", "AVI", "MOV", "MKV"].map((format) => (
+            <span
+              key={format}
+              className="rounded bg-slate-100 px-3 py-1 text-sm"
+            >
+              {format}
+            </span>
+          ))}
         </div>
 
-    )
-
+        {message && (
+          <div className="mt-6 rounded-lg bg-slate-100 px-4 py-3 text-center text-sm text-slate-700">
+            {message}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }

@@ -56,13 +56,8 @@ class ExportService:
         # Cover
         ###############################################################
 
-        transaction = documentation.get(
-            "transaction",
-            "SAP Documentation"
-        )
-
         title = document.add_heading(
-            transaction,
+            "SAP Documentation",
             level=1
         )
 
@@ -239,13 +234,19 @@ class ExportService:
             if image_name:
 
                 image_path = frame_folder / image_name
+                print("=" * 60)
+                print("Image from documentation :", image_name)
+                print("Frame folder :", frame_folder)
 
                 if image_path.exists():
 
+                    print("ADDING IMAGE")
                     document.add_picture(
                         str(image_path),
                         width=Inches(6.3)
                     )
+                else:
+                    print("PIC NOT FOUND")
 
                     caption = document.add_paragraph(
                         f"Figure {index}"
@@ -315,10 +316,165 @@ class ExportService:
         # Save
         ###############################################################
 
-        filename = self._safe_filename(transaction)
+        filename = self._safe_filename("SAP Documentation")
 
         output_file = output_folder / f"{filename}.docx"
 
         document.save(output_file)
 
         return output_file
+
+
+    def export_markdown(self, documentation,output_folder="app/storage/output"):
+
+        output_folder = Path(output_folder)
+        output_folder.mkdir(parents=True, exist_ok=True)
+
+        filename = self._safe_filename("SAP Documentation")
+
+        output_file = output_folder / f"{filename}.md"
+
+        md = []
+
+        md.append(f"# {"SAP Documentation"}\n")
+
+        md.append(f"## {documentation.get('title','')}\n")
+
+        md.append("## Purpose\n")
+        md.append(documentation.get("purpose", "") + "\n")
+
+        if documentation.get("prerequisites"):
+
+            md.append("## Prerequisites\n")
+
+            for item in documentation["prerequisites"]:
+                md.append(f"- {item}")
+
+            md.append("")
+
+        md.append("## Procedure\n")
+
+        for step in documentation.get("steps", []):
+
+            md.append(f"### Step {step.get('step')}")
+
+            if step.get("title"):
+                md.append(f"**{step['title']}**")
+
+            md.append(step.get("description", ""))
+
+            if step.get("image"):
+                md.append(
+                f"![Screenshot](../frames/{step['image']})"
+                )
+
+            md.append("")
+
+        if documentation.get("notes"):
+
+            md.append("## Notes")
+
+            for note in documentation["notes"]:
+                md.append(f"- {note}")
+
+        if documentation.get("warnings"):
+
+            md.append("\n## Warnings")
+
+            for warning in documentation["warnings"]:
+                md.append(f"- {warning}")
+
+        output_file.write_text(
+            "\n".join(md),
+            encoding="utf8"
+        )
+
+        return output_file
+    
+    def export_html(self,documentation,output_folder="app/storage/output"):
+
+        output_folder = Path(output_folder)
+        output_folder.mkdir(parents=True, exist_ok=True)
+
+        filename = self._safe_filename("SAP Documentation")
+
+        output_file = output_folder / f"{filename}.html"
+
+        html = []
+
+        html.append("""
+<html>
+<head>
+<title>SAP Documentation</title>
+
+<style>
+
+body{
+font-family:Arial;
+margin:40px;
+line-height:1.6;
+}
+
+img{
+width:900px;
+border:1px solid #ccc;
+margin-top:10px;
+margin-bottom:20px;
+}
+
+.step{
+margin-bottom:40px;
+}
+
+</style>
+
+</head>
+<body>
+""")
+
+        html.append(f"<h1>{"SAP Documentation"}</h1>")
+
+        html.append(f"<h2>{documentation.get('title','')}</h2>")
+
+        html.append("<h3>Purpose</h3>")
+
+        html.append(
+        f"<p>{documentation.get('purpose','')}</p>"
+        )
+
+        html.append("<h2>Procedure</h2>")
+
+        for step in documentation.get("steps", []):
+
+            html.append("<div class='step'>")
+
+            html.append(
+            f"<h3>Step {step.get('step')}</h3>"
+            )
+
+            html.append(
+                f"<b>{step.get('title','')}</b>"
+            )
+
+            html.append(
+                f"<p>{step.get('description','')}</p>"
+            )
+
+            if step.get("image"):
+
+                html.append(
+                    f"<img src='../frames/{step['image']}'>"
+                )
+
+            html.append("</div>")
+
+        html.append("</body></html>")
+
+        output_file.write_text(
+        "\n".join(html),
+        encoding="utf8"
+        )
+
+        return output_file
+    
+    
